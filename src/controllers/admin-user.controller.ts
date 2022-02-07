@@ -73,7 +73,7 @@ export class AdminUserController {
 
   /**
    * @api {put} /api/users/:userId Update the specified user
-   * @apiName UserUpdate
+   * @apiName AdminUserUpdate
    * @apiGroup User Management
    * @apiVersion 0.1.0
    * @apiPermission admin
@@ -291,11 +291,13 @@ export class AdminUserController {
 
   /**
    * @api {put} /api/users/:userId/delete Delete the specified user
-   * @apiName UserDelete
+   * @apiName AdminUserDelete
    * @apiGroup User Management
    * @apiVersion 0.1.0
    * @apiPermission admin
-   * @apiDescription Delete the specified user
+   * @apiDescription Delete the specified user allowing to set the specified status to the user
+   *
+   * @apiParam {UserStatus} status
    *
    * @apiErrorExample Error-Response:
    * HTTP 1/1 406

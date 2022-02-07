@@ -1,10 +1,11 @@
 import { ConnectionPool, IProcedureResult, MAX, Request as SqlRequest, TYPES } from 'mssql';
-import { ISubject, ISubjectAssignedHistory, SubjectStatus } from 'src/entities/subject';
+import { ISubject, ISubjectAssignedHistory, SubjectStatus } from '~entities';
 import { sqlNVarChar, sqlVarChar } from '~shared';
 
 
 interface ISubjectDTO {
   id: number;
+  uuid: string;
   firstName: string;
   middleName?: string;
   lastName: string;
@@ -55,6 +56,7 @@ export class SubjectDao {
   public async add(subject: ISubjectDTO): Promise<IProcedureResult<any>> {
     try {
       const sqlReq = new SqlRequest(this.sql)
+        .input('uuid', sqlVarChar(50), subject.uuid)
         .input('firstName', sqlNVarChar(100), subject.firstName)
         .input('middleName', sqlNVarChar(100), subject.middleName || null)
         .input('lastName', sqlNVarChar(100), subject.lastName)

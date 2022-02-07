@@ -6,17 +6,14 @@
  * node server/sqls/_run-sps.js username pwd server-name-to-only-run-on
  */
 
-'use strict';
+import { exec } from 'child_process';
+import { extname, resolve } from 'path';
+import { readFile } from 'fs/promises';
+import sql from 'mssql';
+import eol from 'eol';
 
-require('dotenv').config({ path: './env/development.env' });
-const exec = require('child_process').exec;
-const path = require('path');
-const fs = require('fs');
-const sql = require('mssql');
-const eol = require('eol');
-const { promisify } = require('util');
-
-const readFile = promisify(fs.readFile);
+const { connect } = sql;
+const { crlf } = eol;
 
 const serverBase = {
   connectionTimeout: 30000,
@@ -64,10 +61,19 @@ if (false) {
 
 const previouslyModifiedFiles = [
   // 'sqls/changes.sql',
-  'sqls/subjects/getSubjectById.sql',
-  'sqls/subjects/subjectList.sql',
-  'sqls/subjects/subjectAdd.sql',
-  'sqls/subjects/subjectUpdate.sql'
+  'sqls/documents/documentAdd.sql',
+  'sqls/documents/documentUpdate.sql',
+  'sqls/documents/documentDelete.sql',
+  'sqls/documents/documentList.sql',
+  'sqls/documents/getDocumentById.sql',
+  'sqls/documents/getDocumentData.sql',
+  'sqls/documents/documentUpdateData.sql',
+  'sqls/documents/getDocumentDataRaw.sql',
+  'sqls/documents/getDocumentOriginalPath.sql'
+  // 'sqls/subjects/getSubjectById.sql',
+  // 'sqls/subjects/subjectList.sql',
+  // 'sqls/subjects/subjectAdd.sql',
+  // 'sqls/subjects/subjectUpdate.sql'
   // 'sqls/login/didLogin.sql',
   // 'sqls/login/didLogout.sql',
   // 'sqls/users/deserializeUser.sql',
@@ -106,7 +112,7 @@ function getLastFiles(callback) {
         const sps = [];
         files.forEach((f) => {
           if (f) {
-            if (path.extname(f) === '.sql') {
+            if (extname(f) === '.sql') {
               sps.push(f);
             }
           }
@@ -129,7 +135,7 @@ function getModifiedFiles(callback) {
       const result = [];
       files.forEach((f) => {
         if (f) {
-          if (path.extname(f) === '.sql') {
+          if (extname(f) === '.sql') {
             result.push(f);
           }
         }
@@ -164,8 +170,8 @@ async function runBatch(pool, batch) {
 async function runOneFile(cnn, spFile) {
   try {
     console.log(`\n\trunning ${spFile}...`);
-    let data = await readFile(path.resolve(spFile), 'utf8');
-    data = eol.crlf(data);
+    let data = await readFile(resolve(spFile), 'utf8');
+    data = crlf(data);
     const batches = data.split('GO');
     for (let i = 0; i < batches.length; i++) {
       await runBatch(cnn, batches[i]);
@@ -188,7 +194,7 @@ function sqlConnect(serverInfo) {
     }
   };
 
-  return sql.connect(config);
+  return connect(config);
 }
 
 /**
